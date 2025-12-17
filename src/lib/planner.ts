@@ -377,25 +377,22 @@ export class EveningPlanner {
       const bars = await yelp.searchBusinesses({
         term: 'cocktail bar lounge',
         location: intent.location,
-        limit: 5,
+        limit: 10,
         sort_by: 'distance',
       });
 
-      // Filter to nearby bars (within 0.5 miles)
-      const nearby = bars.filter(bar => {
-        const dist = this.haversineDistance(
-          dinnerRestaurant.location.coordinates,
-          bar.location.coordinates
-        );
-        return dist < 0.5;
-      });
-
-      if (nearby.length === 0) {
-        this.emit('drinks_search', 'No nearby bars found - skipping drinks');
+      if (bars.length === 0) {
+        this.emit('drinks_search', 'No bars found in area');
         return null;
       }
 
-      const bar = nearby[0];
+      // Sort by distance and pick closest (no strict filter - just pick best option)
+      const sorted = bars.map(bar => ({
+        bar,
+        dist: this.haversineDistance(dinnerRestaurant.location.coordinates, bar.location.coordinates)
+      })).sort((a, b) => a.dist - b.dist);
+
+      const bar = sorted[0].bar;
       const drinksTime = this.addHours(intent.time, 2);
 
       const distance = this.haversineDistance(

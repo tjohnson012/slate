@@ -61,8 +61,8 @@ export function VibePhotoGrid({ onSelect, maxSelections = 5 }: Props) {
                 sizes="(max-width: 640px) 33vw, 200px"
               />
 
-              <div className="absolute inset-0 flex items-end p-2">
-                <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8">
+                <span className="text-sm text-white font-semibold drop-shadow-lg">
                   {photo.description}
                 </span>
               </div>
