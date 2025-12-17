@@ -28,7 +28,7 @@ export const VIBE_PHOTOS: VibePhoto[] = [
   },
   {
     id: 'upscale-elegant',
-    url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=400&fit=crop',
+    url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=400&fit=crop',
     vibeVector: { lighting: 50, noiseLevel: 25, crowdVibe: 55, formality: 95, adventurousness: 50, priceLevel: 95 },
     description: 'Upscale fine dining',
   },
