@@ -20,6 +20,9 @@ import {
   isSimulationMode,
 } from './booking-simulator';
 import { extractVibeFromRestaurant, calculateVibeMatch, generateVibeExplanation } from './vibe';
+import { sendSMS } from './sms';
+
+const USER_PHONE = '+14155551234'; // HARDCODED - replace with your number
 
 type EventEmitter = (event: PlanningEvent) => void;
 
@@ -319,6 +322,10 @@ export class EveningPlanner {
         restaurant,
         vibeVector: restaurant.vibeVector,
       });
+
+      // Send SMS confirmation
+      const smsText = `Slate: ${restaurant.name}, ${time}, ${restaurant.location.address}, ${restaurant.location.city}. Conf# ${bookingResult.confirmationNumber}`;
+      sendSMS(USER_PHONE, smsText).catch(err => console.error('SMS failed:', err));
 
       return {
         type,

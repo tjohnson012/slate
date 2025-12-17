@@ -1,11 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { PlanStop } from '@/lib/types';
-
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 interface Props {
   stops: PlanStop[];
@@ -13,97 +9,87 @@ interface Props {
 
 export function RouteMap({ stops }: Props) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
-    if (!mapContainer.current || stops.length === 0 || !MAPBOX_TOKEN) return;
+    if (!mapContainer.current || stops.length === 0) return;
+    if (typeof window === 'undefined') return;
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    if (mapRef.current) return; // Already initialized
 
-    const firstStop = stops[0];
+    import('leaflet').then((L) => {
+      // Fix for default marker icons in webpack
+      delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+      });
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [
-        firstStop.restaurant.location.coordinates.longitude,
-        firstStop.restaurant.location.coordinates.latitude,
-      ],
-      zoom: 14,
-    });
+      if (!mapContainer.current) return;
 
-    map.current.on('load', () => {
+      const firstStop = stops[0];
+
+      mapRef.current = L.map(mapContainer.current).setView(
+        [firstStop.restaurant.location.coordinates.latitude, firstStop.restaurant.location.coordinates.longitude],
+        14
+      );
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(mapRef.current);
+
+      const markers: [number, number][] = [];
       stops.forEach((stop, index) => {
-        const el = document.createElement('div');
-        el.className = 'flex items-center justify-center';
-        el.innerHTML = `
-          <div class="w-10 h-10 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center text-zinc-900 font-bold shadow-lg text-sm">
-            ${index + 1}
-          </div>
-        `;
+        const lat = stop.restaurant.location.coordinates.latitude;
+        const lng = stop.restaurant.location.coordinates.longitude;
+        markers.push([lat, lng]);
 
-        new mapboxgl.Marker(el)
-          .setLngLat([
-            stop.restaurant.location.coordinates.longitude,
-            stop.restaurant.location.coordinates.latitude,
-          ])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 }).setHTML(`
-              <div class="text-zinc-900">
-                <strong>${stop.restaurant.name}</strong>
-                <p class="text-sm">${stop.time}</p>
-              </div>
-            `)
-          )
-          .addTo(map.current!);
+        const icon = L.divIcon({
+          className: 'custom-marker',
+          html: `<div style="width:32px;height:32px;border-radius:50%;background:#f59e0b;border:2px solid white;display:flex;align-items:center;justify-content:center;color:#18181b;font-weight:bold;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${index + 1}</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        });
+
+        L.marker([lat, lng], { icon })
+          .addTo(mapRef.current!)
+          .bindPopup(`<b>${stop.restaurant.name}</b><br>${stop.time}`);
       });
 
       if (stops.length > 1) {
-        const coordinates = stops.map(s => [
-          s.restaurant.location.coordinates.longitude,
-          s.restaurant.location.coordinates.latitude,
-        ] as [number, number]);
+        L.polyline(markers, {
+          color: '#f59e0b',
+          weight: 4,
+          dashArray: '10, 10',
+        }).addTo(mapRef.current);
 
-        map.current!.addSource('route', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates,
-            },
-          },
-        });
-
-        map.current!.addLayer({
-          id: 'route',
-          type: 'line',
-          source: 'route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          paint: {
-            'line-color': '#f59e0b',
-            'line-width': 4,
-            'line-dasharray': [2, 2],
-          },
-        });
-
-        const bounds = new mapboxgl.LngLatBounds();
-        coordinates.forEach(coord => bounds.extend(coord));
-        map.current!.fitBounds(bounds, { padding: 60 });
+        mapRef.current.fitBounds(markers, { padding: [40, 40] });
       }
     });
 
-    return () => map.current?.remove();
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
   }, [stops]);
 
-  if (!MAPBOX_TOKEN) {
+  useEffect(() => {
+    // Load Leaflet CSS
+    if (typeof window !== 'undefined') {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(link);
+    }
+  }, []);
+
+  if (stops.length === 0) {
     return (
       <div className="w-full h-64 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500">
-        Map unavailable - Configure Mapbox token
+        No stops to display
       </div>
     );
   }
@@ -112,6 +98,7 @@ export function RouteMap({ stops }: Props) {
     <div
       ref={mapContainer}
       className="w-full h-64 rounded-xl overflow-hidden border border-zinc-800"
+      style={{ background: '#1a1a1a' }}
     />
   );
 }
