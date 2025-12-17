@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { playfair, inter, jetbrains } from "@/lib/fonts";
 import "./globals.css";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
 
 export const metadata: Metadata = {
   title: "Slate - Plan Your Perfect Evening",
@@ -20,7 +14,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${geistSans.variable} font-sans antialiased bg-zinc-950 text-white`}>
+      <body
+        className={`
+          ${playfair.variable}
+          ${inter.variable}
+          ${jetbrains.variable}
+          font-sans antialiased
+          bg-slate-black text-slate-white
+        `}
+      >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-red focus:text-white focus:rounded-md"
+        >
+          Skip to main content
+        </a>
         {children}
       </body>
     </html>
