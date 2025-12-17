@@ -1,5 +1,4 @@
 import { VibeVector, VibePhoto, Restaurant } from './types';
-import { yelp } from './yelp';
 
 export const VIBE_PHOTOS: VibePhoto[] = [
   {
@@ -121,29 +120,6 @@ export function generateVibeSummary(vibeVector: VibeVector): string {
 
   return parts.join(', ') || 'balanced preferences';
 }
-
-const VIBE_KEYWORDS: Record<string, { low: string[]; high: string[] }> = {
-  lighting: {
-    low: ['dim', 'dark', 'moody', 'candlelit', 'romantic', 'intimate', 'cozy', 'low-light', 'ambient'],
-    high: ['bright', 'airy', 'sunny', 'natural light', 'open', 'windows', 'daylight', 'well-lit'],
-  },
-  noiseLevel: {
-    low: ['quiet', 'peaceful', 'serene', 'calm', 'hushed', 'conversation-friendly', 'soft music'],
-    high: ['loud', 'buzzy', 'energetic', 'lively', 'bustling', 'noisy', 'vibrant', 'packed', 'crowded'],
-  },
-  crowdVibe: {
-    low: ['neighborhood', 'locals', 'regulars', 'family', 'unpretentious', 'low-key', 'chill'],
-    high: ['scene', 'trendy', 'hip', 'instagram', 'popular', 'hot spot', 'celebrities', 'see and be seen'],
-  },
-  formality: {
-    low: ['casual', 'relaxed', 'laid-back', 'no dress code', 'come as you are', 'dive', 'hole in wall'],
-    high: ['upscale', 'fine dining', 'elegant', 'formal', 'dress code', 'white tablecloth', 'sophisticated'],
-  },
-  adventurousness: {
-    low: ['traditional', 'classic', 'authentic', 'old-school', 'comfort food', 'familiar', 'no-frills'],
-    high: ['innovative', 'creative', 'experimental', 'fusion', 'molecular', 'unique', 'adventurous', 'bold'],
-  },
-};
 
 export async function extractVibeFromRestaurant(restaurant: Restaurant): Promise<VibeVector> {
   // Generate vibe based on restaurant characteristics for variety
