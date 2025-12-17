@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { VIBE_PHOTOS } from '@/lib/vibe';
 
 interface Props {
@@ -52,12 +53,12 @@ export function VibePhotoGrid({ onSelect, maxSelections = 5 }: Props) {
               whileHover={{ scale: isDisabled ? 1 : 1.02 }}
               whileTap={{ scale: isDisabled ? 1 : 0.98 }}
             >
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${
-                  photo.vibeVector.lighting < 50
-                    ? 'from-zinc-900 to-zinc-800'
-                    : 'from-amber-900/30 to-orange-900/30'
-                }`}
+              <Image
+                src={photo.url}
+                alt={photo.description}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 33vw, 200px"
               />
 
               <div className="absolute inset-0 flex items-end p-2">
