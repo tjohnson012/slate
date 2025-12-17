@@ -6,6 +6,7 @@ interface UserVibeProfile {
   id: string;
   vibeVector: VibeVector;
   favoritePhotos: string[];
+  phone?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,7 @@ interface PlanState {
   setUserVibeProfile: (profile: UserVibeProfile | null) => void;
   updateVibeVector: (vibeVector: VibeVector) => void;
   setFavoritePhotos: (photoIds: string[]) => void;
+  setUserPhone: (phone: string) => void;
   reset: () => void;
 
   startPlanStream: (prompt: string) => Promise<void>;
@@ -66,6 +68,19 @@ export const usePlanStore = create<PlanState>()(
         userVibeProfile: state.userVibeProfile
           ? { ...state.userVibeProfile, favoritePhotos: photoIds, updatedAt: new Date() }
           : null,
+      })),
+
+      setUserPhone: (phone) => set((state) => ({
+        userVibeProfile: state.userVibeProfile
+          ? { ...state.userVibeProfile, phone, updatedAt: new Date() }
+          : {
+              id: crypto.randomUUID(),
+              vibeVector: { lighting: 50, noiseLevel: 50, crowdVibe: 50, formality: 50, adventurousness: 50, priceLevel: 50 },
+              favoritePhotos: [],
+              phone,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
       })),
 
       reset: () => set({

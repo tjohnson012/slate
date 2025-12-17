@@ -12,7 +12,7 @@ type Step = 'photos' | 'phone' | 'verify' | 'profile';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { updateVibeVector, setFavoritePhotos } = usePlanStore();
+  const { updateVibeVector, setFavoritePhotos, setUserPhone } = usePlanStore();
 
   const [step, setStep] = useState<Step>('photos');
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
@@ -32,19 +32,35 @@ export default function OnboardingPage() {
 
   const handlePhoneSubmit = async () => {
     const digits = phone.replace(/\D/g, '');
-    if (digits.length !== 10) {
-      setPhoneError('Please enter a valid 10-digit phone number');
+    if (digits.length < 10) {
+      setPhoneError('Please enter a valid phone number');
       return;
     }
 
     setLoading(true);
     setPhoneError('');
 
-    // Simulate sending verification code
-    await new Promise((r) => setTimeout(r, 1000));
+    try {
+      const res = await fetch('/api/verify/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
 
-    setLoading(false);
-    setStep('verify');
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPhoneError(data.error || 'Failed to send code');
+        setLoading(false);
+        return;
+      }
+
+      setLoading(false);
+      setStep('verify');
+    } catch {
+      setPhoneError('Failed to send verification code');
+      setLoading(false);
+    }
   };
 
   const handleCodeSubmit = async () => {
@@ -56,12 +72,47 @@ export default function OnboardingPage() {
     setLoading(true);
     setCodeError('');
 
-    // Simulate verification
-    await new Promise((r) => setTimeout(r, 1000));
+    try {
+      const res = await fetch('/api/verify/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code }),
+      });
 
-    // For demo, accept any 6-digit code
+      const data = await res.json();
+
+      if (!res.ok) {
+        setCodeError(data.error || 'Invalid code');
+        setLoading(false);
+        return;
+      }
+
+      // Save verified phone number
+      setUserPhone(data.phone);
+      setLoading(false);
+      setStep('profile');
+    } catch {
+      setCodeError('Verification failed');
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setCode('');
+    setCodeError('');
+    setLoading(true);
+
+    try {
+      await fetch('/api/verify/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+    } catch {
+      // Silent fail
+    }
+
     setLoading(false);
-    setStep('profile');
   };
 
   const handleComplete = () => {
@@ -235,11 +286,9 @@ export default function OnboardingPage() {
                 </Button>
 
                 <button
-                  onClick={() => {
-                    setCode('');
-                    // Resend code logic
-                  }}
-                  className="w-full text-center text-sm text-warm-gray hover:text-slate-white transition-colors"
+                  onClick={handleResendCode}
+                  disabled={loading}
+                  className="w-full text-center text-sm text-warm-gray hover:text-slate-white transition-colors disabled:opacity-50"
                 >
                   Resend code
                 </button>
