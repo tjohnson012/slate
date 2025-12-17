@@ -1,16 +1,27 @@
 import { Restaurant, YelpBusiness, YelpChatResponse } from './types';
 
-const YELP_API_KEY = process.env.YELP_API_KEY!;
+const YELP_API_KEY = process.env.YELP_API_KEY;
 const BASE_URL = 'https://api.yelp.com/v3';
 
 class YelpClient {
   private chatId: string | null = null;
 
+  private getApiKey(): string {
+    if (!YELP_API_KEY) {
+      throw new Error(
+        'YELP_API_KEY is not configured. Add it to your .env file or Vercel environment variables.'
+      );
+    }
+    return YELP_API_KEY;
+  }
+
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const apiKey = this.getApiKey();
+
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       headers: {
-        'Authorization': `Bearer ${YELP_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         ...options?.headers,
       },
@@ -18,6 +29,9 @@ class YelpClient {
 
     if (!response.ok) {
       const error = await response.text();
+      if (response.status === 401) {
+        throw new Error('Yelp API authentication failed. Check your YELP_API_KEY.');
+      }
       throw new Error(`Yelp API error: ${response.status} - ${error}`);
     }
 
