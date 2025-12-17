@@ -306,3 +306,129 @@ export interface YelpBusiness {
   photos?: string[];
   hours?: { is_open_now: boolean }[];
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VOICE CALLING
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface VoiceCall {
+  id: string;
+  status: 'initiating' | 'dialing' | 'ringing' | 'connected' | 'completed' | 'failed';
+  restaurantName: string;
+  restaurantPhone: string;
+  requestedDate: string;
+  requestedTime: string;
+  partySize: number;
+  transcript: TranscriptEntry[];
+  result?: CallResult;
+  duration?: number;
+  startedAt: Date;
+  completedAt?: Date;
+}
+
+export interface TranscriptEntry {
+  speaker: 'agent' | 'restaurant';
+  text: string;
+  timestamp: Date;
+  confidence?: number;
+}
+
+export interface CallResult {
+  success: boolean;
+  confirmationNumber?: string;
+  confirmedTime?: string;
+  confirmedPartySize?: number;
+  notes?: string;
+  alternativeOffered?: string;
+  failureReason?: string;
+}
+
+export interface VoiceAgentConfig {
+  restaurantName: string;
+  requestedDate: string;
+  requestedTime: string;
+  partySize: number;
+  guestName: string;
+  phoneCallback: string;
+  flexibility: {
+    timeRange: number;
+    acceptAlternatives: boolean;
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTONOMY MODE
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AutonomyConfig {
+  id: string;
+  userId: string;
+  enabled: boolean;
+  schedule: {
+    daysOfWeek: number[];
+    notifyDaysBefore: number;
+    notifyTime: string;
+  };
+  constraints: {
+    partySize: number;
+    budgetPerPerson: { min: number; max: number };
+    neighborhoods: string[];
+    cuisinePreferences: string[];
+    cuisineExclusions: string[];
+    includeDrinks: boolean;
+    timePreference: { earliest: string; latest: string };
+  };
+  autonomyLevel: 'suggest' | 'book_with_confirm' | 'full_auto';
+  vibeVector: VibeVector;
+  lastPlannedDate?: Date;
+  successfulBookings: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AutonomyPlan {
+  id: string;
+  configId: string;
+  userId: string;
+  targetDate: string;
+  status: 'planning' | 'booked' | 'notified' | 'completed' | 'cancelled';
+  plan: EveningPlan;
+  notifiedAt?: Date;
+  userResponse?: 'accepted' | 'cancelled' | 'modified' | 'no_response';
+  createdAt: Date;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TREND PREDICTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface TrendingRestaurant {
+  restaurant: Restaurant;
+  trendScore: number;
+  signals: TrendSignal[];
+  prediction: {
+    currentWaitDays: number;
+    predictedWaitDays: number;
+    confidence: number;
+  };
+  opportunity: string;
+  detectedAt: Date;
+}
+
+export interface TrendSignal {
+  source: 'tiktok' | 'instagram' | 'eater' | 'infatuation' | 'nytimes' | 'yelp_reviews';
+  metric: string;
+  value: number;
+  change: number;
+  period: string;
+  url?: string;
+}
+
+export interface TrendAlert {
+  id: string;
+  userId: string;
+  restaurant: TrendingRestaurant;
+  status: 'pending' | 'sent' | 'acted' | 'dismissed';
+  sentAt?: Date;
+  userAction?: 'booked' | 'dismissed' | 'saved';
+}

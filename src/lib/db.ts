@@ -33,6 +33,9 @@ async function del(key: string): Promise<void> {
 }
 
 export const db = {
+  get,
+  set,
+  del,
   user: {
     get: (id: string) => get<UserProfile>(`user:${id}`),
     set: (id: string, profile: UserProfile) => set(`user:${id}`, profile),
