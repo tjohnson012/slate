@@ -98,10 +98,18 @@ export class EveningPlanner {
       const dinnerStop = await this.bookFromMatrix(matrix, plan.parsedIntent, 'dinner');
       if (dinnerStop) plan.stops.push(dinnerStop);
 
-      // Find drinks if requested
-      if (plan.parsedIntent.includeDrinks && dinnerStop) {
+      // Find dessert after dinner
+      if (dinnerStop && plan.parsedIntent.includeDessert) {
+        this.emit('dessert_search', 'Finding dessert spots nearby...');
+        const dessertStop = await this.findDessert(dinnerStop.restaurant, plan.parsedIntent);
+        if (dessertStop) plan.stops.push(dessertStop);
+      }
+
+      // Find drinks (default to yes for full evening)
+      const lastStop = plan.stops[plan.stops.length - 1];
+      if (lastStop && (plan.parsedIntent.includeDrinks || !plan.parsedIntent.includeDessert)) {
         this.emit('drinks_search', 'Finding drinks nearby...');
-        const drinksStop = await this.findDrinks(dinnerStop.restaurant, plan.parsedIntent);
+        const drinksStop = await this.findDrinks(lastStop.restaurant, plan.parsedIntent);
         if (drinksStop) plan.stops.push(drinksStop);
       }
 
@@ -319,6 +327,9 @@ export class EveningPlanner {
       matrix.cells[bestCell.row][bestCell.col].status = 'booked';
       matrix.selectedCell = bestCell;
 
+      // Emit matrix update with selected cell so UI shows the selection
+      this.emit('matrix_update', `Auto-selected ${restaurant.name} at ${time}`, matrix);
+
       this.emit('booking_success', `Confirmed at ${restaurant.name}!`, {
         restaurant,
         time,
@@ -418,6 +429,67 @@ export class EveningPlanner {
       };
     } catch (error) {
       console.error('Error finding drinks:', error);
+      return null;
+    }
+  }
+
+  private async findDessert(dinnerRestaurant: Restaurant, intent: ParsedIntent): Promise<PlanStop | null> {
+    try {
+      const dessertSpots = await yelp.searchBusinesses({
+        term: 'dessert ice cream bakery',
+        location: intent.location,
+        limit: 5,
+        sort_by: 'distance',
+      });
+
+      // Filter to nearby spots (within 0.4 miles)
+      const nearby = dessertSpots.filter(spot => {
+        const dist = this.haversineDistance(
+          dinnerRestaurant.location.coordinates,
+          spot.location.coordinates
+        );
+        return dist < 0.4;
+      });
+
+      if (nearby.length === 0) {
+        this.emit('dessert_search', 'No nearby dessert spots - skipping');
+        return null;
+      }
+
+      const spot = nearby[0];
+      const dessertTime = this.addHours(intent.time, 1.5); // 1.5 hours after dinner
+
+      const distance = this.haversineDistance(
+        dinnerRestaurant.location.coordinates,
+        spot.location.coordinates
+      );
+
+      this.emit('walking_route_calculated', `${Math.round(distance * 20)} min walk to ${spot.name}`, {
+        spot,
+        distance,
+      });
+
+      return {
+        type: 'dessert',
+        restaurant: spot,
+        time: dessertTime,
+        booking: {
+          restaurantId: spot.id,
+          restaurantName: spot.name,
+          requestedTime: dessertTime,
+          requestedDate: intent.date,
+          partySize: intent.partySize,
+          status: 'confirmed',
+          confirmationNumber: generateConfirmationNumber(spot.name),
+          attemptedAt: new Date(),
+        },
+        walkingFromPrevious: {
+          minutes: Math.round(distance * 20),
+          distance: Math.round(distance * 1000),
+        },
+      };
+    } catch (error) {
+      console.error('Error finding dessert:', error);
       return null;
     }
   }

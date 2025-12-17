@@ -6,13 +6,23 @@ import { Zap, CheckCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Navigation } from '@/components/landing';
 import { AutonomySetup } from '@/components/autonomy';
+import { AutonomyConfig } from '@/lib/types';
 
 export default function AutonomySettingsPage() {
   const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async (config: AutonomyConfig) => {
+    try {
+      await fetch('/api/autonomy/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error('Failed to save:', error);
+    }
   };
 
   return (

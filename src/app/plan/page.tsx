@@ -130,12 +130,23 @@ export default function PlanPage() {
               <ThinkingStream events={events} isPlanning={isPlanning} />
             )}
 
-            {matrix && isPlanning && (
+            {matrix && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <AvailabilityMatrix matrix={matrix} />
+                {matrix.selectedCell && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4 p-4 bg-success/10 border border-success/30 rounded-xl"
+                  >
+                    <p className="text-success font-medium">
+                      ✓ Auto-selected best option: {matrix.restaurants[matrix.selectedCell.row]?.name} at {matrix.timeSlots[matrix.selectedCell.col]}
+                    </p>
+                  </motion.div>
+                )}
               </motion.div>
             )}
 

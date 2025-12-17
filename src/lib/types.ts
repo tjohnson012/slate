@@ -247,6 +247,7 @@ export type PlanningEventType =
   | 'recovery_start'
   | 'vibe_match_calculated'
   | 'drinks_search'
+  | 'dessert_search'
   | 'walking_route_calculated'
   | 'plan_complete'
   | 'error';

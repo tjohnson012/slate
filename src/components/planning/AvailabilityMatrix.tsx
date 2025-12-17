@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, X, Loader2 } from 'lucide-react';
+import { Check, X, Loader2, Sparkles } from 'lucide-react';
 import { AvailabilityMatrix as MatrixType, AvailabilityCell, CellStatus } from '@/lib/types';
 
 interface AvailabilityMatrixProps {
@@ -10,8 +10,16 @@ interface AvailabilityMatrixProps {
 }
 
 export function AvailabilityMatrix({ matrix, onSelect }: AvailabilityMatrixProps) {
+  const hasSelection = matrix.selectedCell !== undefined;
+
   return (
     <div className="overflow-x-auto bg-charcoal rounded-xl p-4 border border-light-gray/10">
+      {hasSelection && (
+        <div className="flex items-center gap-2 mb-4 px-1">
+          <Sparkles className="w-4 h-4 text-slate-red" />
+          <span className="text-sm text-slate-white font-medium">Best option auto-selected</span>
+        </div>
+      )}
       <table className="w-full border-collapse">
         <thead>
           <tr>
@@ -26,38 +34,50 @@ export function AvailabilityMatrix({ matrix, onSelect }: AvailabilityMatrixProps
           </tr>
         </thead>
         <tbody>
-          {matrix.restaurants.map((restaurant, rowIndex) => (
-            <motion.tr
-              key={restaurant.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: rowIndex * 0.1 }}
-              className="border-t border-light-gray/10"
-            >
-              <td className="sticky left-0 bg-charcoal z-10 p-3">
-                <p className="font-medium text-slate-white">{restaurant.name}</p>
-                {restaurant.vibeMatchScore !== undefined && (
-                  <p className="text-xs text-slate-red">{restaurant.vibeMatchScore}% match</p>
-                )}
-              </td>
-              {matrix.cells[rowIndex]?.map((cell, colIndex) => {
-                const isSelected = matrix.selectedCell?.row === rowIndex && matrix.selectedCell?.col === colIndex;
-                return (
-                  <td key={`${rowIndex}-${colIndex}`} className="p-2">
-                    <SlotCell
-                      cell={cell}
-                      isSelected={isSelected}
-                      onClick={() => cell.status === 'available' && onSelect?.(rowIndex, colIndex)}
-                    />
-                  </td>
-                );
-              })}
-            </motion.tr>
-          ))}
+          {matrix.restaurants.map((restaurant, rowIndex) => {
+            const isSelectedRow = matrix.selectedCell?.row === rowIndex;
+            return (
+              <motion.tr
+                key={restaurant.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: rowIndex * 0.1 }}
+                className={`border-t border-light-gray/10 ${isSelectedRow ? 'bg-slate-red/5' : ''}`}
+              >
+                <td className={`sticky left-0 z-10 p-3 ${isSelectedRow ? 'bg-slate-red/10' : 'bg-charcoal'}`}>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <p className="font-medium text-slate-white">{restaurant.name}</p>
+                      {restaurant.vibeMatchScore !== undefined && (
+                        <p className="text-xs text-slate-red">{restaurant.vibeMatchScore}% match</p>
+                      )}
+                    </div>
+                    {isSelectedRow && (
+                      <span className="px-1.5 py-0.5 bg-slate-red text-white text-xs font-bold rounded">
+                        BEST
+                      </span>
+                    )}
+                  </div>
+                </td>
+                {matrix.cells[rowIndex]?.map((cell, colIndex) => {
+                  const isSelected = matrix.selectedCell?.row === rowIndex && matrix.selectedCell?.col === colIndex;
+                  return (
+                    <td key={`${rowIndex}-${colIndex}`} className="p-2">
+                      <SlotCell
+                        cell={cell}
+                        isSelected={isSelected}
+                        onClick={() => cell.status === 'available' && onSelect?.(rowIndex, colIndex)}
+                      />
+                    </td>
+                  );
+                })}
+              </motion.tr>
+            );
+          })}
         </tbody>
       </table>
 
-      <div className="flex gap-4 mt-4 text-xs text-warm-gray">
+      <div className="flex flex-wrap gap-4 mt-4 text-xs text-warm-gray">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-success" /> Available
         </div>
@@ -66,6 +86,9 @@ export function AvailabilityMatrix({ matrix, onSelect }: AvailabilityMatrixProps
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-warning animate-pulse" /> Checking
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-slate-red ring-2 ring-slate-red/50" /> Booked
         </div>
       </div>
     </div>

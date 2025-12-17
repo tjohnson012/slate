@@ -21,6 +21,7 @@ const eventConfig: Record<PlanningEventType, { icon: string; color: string }> = 
   recovery_start: { icon: '↻', color: 'text-warning' },
   vibe_match_calculated: { icon: '✨', color: 'text-purple-400' },
   drinks_search: { icon: '🍸', color: 'text-slate-white' },
+  dessert_search: { icon: '🍰', color: 'text-pink-400' },
   walking_route_calculated: { icon: '🚶', color: 'text-blue-400' },
   plan_complete: { icon: '★', color: 'text-success' },
   error: { icon: '!', color: 'text-red-400' },
