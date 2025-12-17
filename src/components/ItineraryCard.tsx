@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { EveningPlan } from '@/lib/types';
 import { VenueCard } from './VenueCard';
@@ -19,8 +20,40 @@ const statusConfig = {
 };
 
 export function ItineraryCard({ plan, showMap = true }: Props) {
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'shared'>('idle');
   const config = statusConfig[plan.status];
   const hasBookings = plan.stops.some(s => s.booking.status === 'confirmed');
+
+  const handleShare = async () => {
+    const itineraryText = plan.stops.map((stop, i) => {
+      const prefix = i === 0 ? '' : `→ ${stop.walkingFromPrevious?.minutes || 5} min walk\n`;
+      return `${prefix}${stop.type.toUpperCase()}: ${stop.restaurant.name} at ${stop.time}\n${stop.restaurant.location.address}, ${stop.restaurant.location.city}${stop.booking.confirmationNumber ? `\nConf# ${stop.booking.confirmationNumber}` : ''}`;
+    }).join('\n\n');
+
+    const shareText = `My evening plan for ${plan.parsedIntent.date}:\n\n${itineraryText}\n\nPlanned with Slate`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'My Evening Plan', text: shareText });
+        setShareStatus('shared');
+      } catch {
+        // User cancelled or share failed, try clipboard
+        await copyToClipboard(shareText);
+      }
+    } else {
+      await copyToClipboard(shareText);
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareStatus('copied');
+      setTimeout(() => setShareStatus('idle'), 2000);
+    } catch {
+      console.error('Failed to copy');
+    }
+  };
 
   return (
     <motion.div
@@ -76,11 +109,12 @@ export function ItineraryCard({ plan, showMap = true }: Props) {
       {hasBookings && (
         <div className="mt-6 flex gap-3">
           <motion.button
+            onClick={handleShare}
             className="flex-1 py-3 bg-slate-red text-white font-semibold rounded-xl hover:bg-slate-red/90 transition-colors"
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
-            Share Itinerary
+            {shareStatus === 'copied' ? '✓ Copied to clipboard!' : shareStatus === 'shared' ? '✓ Shared!' : 'Share Itinerary'}
           </motion.button>
           <motion.button
             className="py-3 px-4 bg-charcoal text-slate-white rounded-xl border border-light-gray/20 hover:border-slate-red/50 transition-colors"

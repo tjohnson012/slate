@@ -56,7 +56,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <Link href="/plan">
+              <Link href="/onboarding">
                 <Button size="lg" rightIcon={<ArrowRight className="w-5 h-5" />}>
                   Start Planning
                 </Button>
