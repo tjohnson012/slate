@@ -212,75 +212,76 @@ function extractPartySize(prompt: string): number {
 function extractLocation(prompt: string): string {
   const lower = prompt.toLowerCase();
 
-  // Pattern 1: "in [Location]" - most common
-  const inPatterns = [
-    /\bin\s+([A-Za-z][A-Za-z\s]+?)(?:\s+(?:for|at|around|near|tonight|tomorrow|this|next|\d)|\s*[,.]|$)/i,
-    /\bin\s+the\s+([A-Za-z][A-Za-z\s]+?)(?:\s+(?:for|at|around|near|tonight|tomorrow|this|next|\d)|\s*[,.]|$)/i,
-  ];
-
-  for (const pattern of inPatterns) {
-    const match = prompt.match(pattern);
-    if (match) {
-      const location = match[1].trim();
-      // Filter out non-location words
-      const nonLocations = ['mood', 'evening', 'night', 'morning', 'afternoon', 'vibe', 'style'];
-      if (!nonLocations.includes(location.toLowerCase())) {
-        return cleanLocation(location);
-      }
+  // Pattern 1: "in [Location]" - capture everything after "in" until end or stop words
+  const inMatch = prompt.match(/\bin\s+([A-Za-z][A-Za-z\s'-]+?)(?:\s+(?:for|at|around|near|tonight|tomorrow|this|next|on|\d)|,|\.|\s*$)/i);
+  if (inMatch) {
+    const location = inMatch[1].trim();
+    const nonLocations = ['mood', 'evening', 'night', 'morning', 'afternoon', 'vibe', 'style', 'a', 'the', 'my', 'our'];
+    if (!nonLocations.includes(location.toLowerCase()) && location.length > 1) {
+      return cleanLocation(location);
     }
   }
 
-  // Pattern 2: "[Location] area/neighborhood"
-  const areaMatch = prompt.match(/([A-Za-z][A-Za-z\s]+?)\s+(?:area|neighborhood|district)/i);
-  if (areaMatch) {
-    return cleanLocation(areaMatch[1]);
-  }
-
-  // Pattern 3: "near/around [Location]"
-  const nearMatch = prompt.match(/(?:near|around|by)\s+([A-Za-z][A-Za-z\s]+?)(?:\s+(?:for|at|\d)|\s*[,.]|$)/i);
+  // Pattern 2: "near/around [Location]"
+  const nearMatch = prompt.match(/(?:near|around|by)\s+([A-Za-z][A-Za-z\s'-]+?)(?:\s+(?:for|at|\d)|,|\.|\s*$)/i);
   if (nearMatch) {
-    return cleanLocation(nearMatch[1]);
+    return cleanLocation(nearMatch[1].trim());
   }
 
-  // Pattern 4: City, State format
-  const cityStateMatch = prompt.match(/([A-Za-z\s]+),\s*([A-Z]{2}|[A-Za-z]+)/);
+  // Pattern 3: City, State format (e.g., "Austin, TX" or "Cincinnati, Ohio")
+  const cityStateMatch = prompt.match(/([A-Za-z][A-Za-z\s'-]+),\s*([A-Z]{2}|[A-Za-z]+)/);
   if (cityStateMatch) {
     return `${cityStateMatch[1].trim()}, ${cityStateMatch[2].trim()}`;
   }
 
-  // Pattern 5: Check for known major cities mentioned anywhere
-  const majorCities = [
-    'new york', 'nyc', 'manhattan', 'brooklyn', 'queens', 'bronx', 'staten island',
-    'los angeles', 'la', 'hollywood', 'santa monica', 'beverly hills', 'west hollywood',
+  // Pattern 4: Check for known cities anywhere in the prompt
+  const cities = [
+    'new york', 'nyc', 'manhattan', 'brooklyn', 'queens', 'bronx',
+    'los angeles', 'la', 'hollywood', 'santa monica', 'beverly hills',
     'san francisco', 'sf', 'oakland', 'berkeley',
     'chicago', 'wicker park', 'lincoln park', 'river north',
     'miami', 'miami beach', 'south beach', 'wynwood', 'brickell',
-    'austin', 'houston', 'dallas', 'san antonio',
+    'austin', 'houston', 'dallas', 'san antonio', 'fort worth',
     'seattle', 'capitol hill', 'fremont', 'ballard',
     'boston', 'cambridge', 'back bay', 'beacon hill',
-    'denver', 'lodo', 'rino',
+    'denver', 'boulder', 'lodo', 'rino',
     'portland', 'pearl district',
     'philadelphia', 'philly', 'old city', 'rittenhouse',
     'washington dc', 'dc', 'georgetown', 'dupont circle',
-    'atlanta', 'midtown', 'buckhead',
-    'nashville', 'broadway', 'the gulch',
+    'atlanta', 'midtown', 'buckhead', 'decatur',
+    'nashville', 'the gulch', 'east nashville',
     'new orleans', 'nola', 'french quarter', 'garden district',
     'san diego', 'gaslamp', 'la jolla',
     'las vegas', 'the strip',
-    'phoenix', 'scottsdale',
+    'phoenix', 'scottsdale', 'tempe',
     'minneapolis', 'st paul',
     'detroit', 'downtown detroit',
-    'cleveland', 'tremont',
+    'cleveland', 'cincinnati', 'columbus', 'ohio city',
+    'pittsburgh', 'baltimore', 'tampa', 'orlando',
+    'charlotte', 'raleigh', 'durham', 'chapel hill',
+    'salt lake city', 'park city',
+    'sacramento', 'san jose', 'fresno',
+    'kansas city', 'st louis', 'indianapolis',
+    'milwaukee', 'madison',
+    'memphis', 'louisville', 'lexington',
+    'albuquerque', 'tucson', 'el paso',
+    'omaha', 'des moines', 'oklahoma city', 'tulsa',
+    'richmond', 'virginia beach', 'norfolk',
+    'providence', 'hartford', 'new haven',
+    'buffalo', 'rochester', 'albany', 'syracuse',
+    'jacksonville', 'fort lauderdale', 'west palm beach',
+    'anchorage', 'honolulu',
   ];
 
-  for (const city of majorCities) {
+  for (const city of cities) {
     if (lower.includes(city)) {
       return cleanLocation(city);
     }
   }
 
-  // Default fallback
-  return 'Manhattan, NY';
+  // NO DEFAULT - return empty to force error message asking for location
+  // This way user knows to specify a location instead of getting wrong results
+  return '';
 }
 
 function cleanLocation(location: string): string {

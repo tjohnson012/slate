@@ -58,6 +58,13 @@ export class EveningPlanner {
       this.emit('intent_parsed', 'Understanding your request...');
       plan.parsedIntent = parseUserIntent(prompt);
 
+      // Check if location was found
+      if (!plan.parsedIntent.location) {
+        this.emit('error', 'Please include a location (e.g., "sushi in Austin" or "dinner in Chicago")');
+        plan.status = 'failed';
+        return plan;
+      }
+
       const cuisineDesc = plan.parsedIntent.cuisines.length > 0
         ? plan.parsedIntent.cuisines.join(' & ')
         : 'dinner';
