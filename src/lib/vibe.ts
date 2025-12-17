@@ -146,31 +146,57 @@ const VIBE_KEYWORDS: Record<string, { low: string[]; high: string[] }> = {
 };
 
 export async function extractVibeFromRestaurant(restaurant: Restaurant): Promise<VibeVector> {
-  try {
-    const prompt = `Describe the atmosphere at ${restaurant.name}. Is it dim or bright? Quiet or loud? Neighborhood feel or trendy scene? Casual or upscale? Traditional or experimental?`;
+  // Generate vibe based on restaurant characteristics for variety
+  const categories = restaurant.categories.map(c => c.toLowerCase()).join(' ');
+  const name = restaurant.name.toLowerCase();
+  const priceLen = restaurant.priceLevel?.length || 2;
 
-    const response = await yelp.chat(prompt);
-    const text = response.text.toLowerCase();
+  // Use restaurant ID hash for consistent but varied randomness
+  const hash = restaurant.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const variance = (seed: number) => ((hash * seed) % 30) - 15; // -15 to +15 variance
 
-    const dimensions = Object.keys(VIBE_KEYWORDS) as (keyof typeof VIBE_KEYWORDS)[];
-    const result: VibeVector = { ...DEFAULT_VIBE };
+  const result: VibeVector = {
+    // Lighting: fine dining/wine bars darker, cafes/brunch brighter
+    lighting: categories.includes('wine') || categories.includes('cocktail') || categories.includes('speakeasy')
+      ? 25 + variance(1)
+      : categories.includes('cafe') || categories.includes('brunch') || categories.includes('breakfast')
+      ? 75 + variance(2)
+      : 50 + variance(3),
 
-    for (const dim of dimensions) {
-      const keywords = VIBE_KEYWORDS[dim];
-      const lowCount = keywords.low.filter(k => text.includes(k)).length;
-      const highCount = keywords.high.filter(k => text.includes(k)).length;
+    // Noise: bars/clubs louder, fine dining quieter
+    noiseLevel: categories.includes('bar') || categories.includes('club') || categories.includes('pub')
+      ? 70 + variance(4)
+      : priceLen >= 3
+      ? 30 + variance(5)
+      : 50 + variance(6),
 
-      if (lowCount + highCount > 0) {
-        result[dim as keyof VibeVector] = Math.round((highCount / (lowCount + highCount)) * 100);
-      }
-    }
+    // Crowd vibe: trendy spots vs neighborhood joints
+    crowdVibe: categories.includes('trendy') || name.includes('craft') || restaurant.reviewCount > 500
+      ? 70 + variance(7)
+      : categories.includes('diner') || categories.includes('family')
+      ? 25 + variance(8)
+      : 45 + variance(9),
 
-    result.priceLevel = restaurant.priceLevel ? (restaurant.priceLevel.length / 4) * 100 : 50;
+    // Formality: based on price level
+    formality: priceLen === 4 ? 85 + variance(10) : priceLen === 3 ? 60 + variance(11) : priceLen === 1 ? 20 + variance(12) : 40 + variance(13),
 
-    return result;
-  } catch {
-    return DEFAULT_VIBE;
+    // Adventurousness: fusion/experimental vs traditional
+    adventurousness: categories.includes('fusion') || categories.includes('modern') || categories.includes('new american')
+      ? 75 + variance(14)
+      : categories.includes('traditional') || categories.includes('classic') || categories.includes('diner')
+      ? 25 + variance(15)
+      : 50 + variance(16),
+
+    // Price level directly from restaurant
+    priceLevel: (priceLen / 4) * 100,
+  };
+
+  // Clamp all values to 0-100
+  for (const key of Object.keys(result) as (keyof VibeVector)[]) {
+    result[key] = Math.max(0, Math.min(100, Math.round(result[key])));
   }
+
+  return result;
 }
 
 const DIMENSION_LABELS: Record<keyof VibeVector, { low: string; high: string }> = {
