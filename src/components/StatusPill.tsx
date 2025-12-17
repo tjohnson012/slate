@@ -13,14 +13,14 @@ interface Props {
 }
 
 const statusConfig: Record<StatusType, { label: string; className: string }> = {
-  pending: { label: 'Pending', className: 'bg-amber-500/20 text-amber-400 animate-pulse' },
-  confirmed: { label: 'Confirmed', className: 'bg-emerald-500/20 text-emerald-400' },
+  pending: { label: 'Pending', className: 'bg-warning/20 text-warning animate-pulse' },
+  confirmed: { label: 'Confirmed', className: 'bg-success/20 text-success' },
   failed: { label: 'Failed', className: 'bg-red-500/20 text-red-400' },
   handoff: { label: 'Complete on Yelp', className: 'bg-blue-500/20 text-blue-400' },
-  checking: { label: 'Checking', className: 'bg-zinc-700 text-zinc-300 animate-pulse' },
+  checking: { label: 'Checking', className: 'bg-charcoal text-warm-gray animate-pulse' },
   available: { label: 'Available', className: 'bg-blue-500/20 text-blue-400' },
-  booked: { label: 'Booked', className: 'bg-emerald-500/20 text-emerald-400' },
-  unavailable: { label: 'Unavailable', className: 'bg-zinc-700 text-zinc-400' },
+  booked: { label: 'Booked', className: 'bg-success/20 text-success' },
+  unavailable: { label: 'Unavailable', className: 'bg-charcoal text-warm-gray' },
 };
 
 export function StatusPill({ status }: Props) {

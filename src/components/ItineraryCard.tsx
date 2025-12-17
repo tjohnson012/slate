@@ -11,10 +11,10 @@ interface Props {
 }
 
 const statusConfig = {
-  planning: { label: 'Planning your evening...', color: 'text-amber-400' },
-  booking: { label: 'Securing reservations...', color: 'text-amber-400' },
-  confirmed: { label: 'Your evening is set', color: 'text-emerald-400' },
-  partial: { label: 'Partially booked', color: 'text-amber-400' },
+  planning: { label: 'Planning your evening...', color: 'text-warning' },
+  booking: { label: 'Securing reservations...', color: 'text-warning' },
+  confirmed: { label: 'Your evening is set', color: 'text-success' },
+  partial: { label: 'Partially booked', color: 'text-warning' },
   failed: { label: 'Unable to book', color: 'text-red-400' },
 };
 
@@ -30,17 +30,17 @@ export function ItineraryCard({ plan, showMap = true }: Props) {
     >
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className={`text-xl font-bold ${config.color}`}>
+          <h2 className={`font-display text-xl font-bold ${config.color}`}>
             {config.label}
           </h2>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-sm text-warm-gray mt-1">
             {plan.parsedIntent.date} · {plan.parsedIntent.time} · {plan.parsedIntent.partySize} {plan.parsedIntent.partySize === 1 ? 'guest' : 'guests'}
           </p>
         </div>
         {hasBookings && (
           <div className="text-right">
-            <p className="text-xs text-zinc-500">Estimated</p>
-            <p className="text-lg font-semibold text-white">${plan.totalEstimatedCost}</p>
+            <p className="text-xs text-warm-gray">Estimated</p>
+            <p className="text-lg font-semibold text-slate-white">${plan.totalEstimatedCost}</p>
           </div>
         )}
       </div>
@@ -66,8 +66,8 @@ export function ItineraryCard({ plan, showMap = true }: Props) {
           ))}
         </div>
       ) : (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
-          <p className="text-zinc-400">
+        <div className="bg-charcoal border border-light-gray/10 rounded-xl p-8 text-center">
+          <p className="text-warm-gray">
             No venues found matching your vibe. Try adjusting your request.
           </p>
         </div>
@@ -76,14 +76,14 @@ export function ItineraryCard({ plan, showMap = true }: Props) {
       {hasBookings && (
         <div className="mt-6 flex gap-3">
           <motion.button
-            className="flex-1 py-3 bg-amber-500 text-zinc-900 font-semibold rounded-xl"
+            className="flex-1 py-3 bg-slate-red text-white font-semibold rounded-xl hover:bg-slate-red/90 transition-colors"
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
             Share Itinerary
           </motion.button>
           <motion.button
-            className="py-3 px-4 bg-zinc-800 text-white rounded-xl"
+            className="py-3 px-4 bg-charcoal text-slate-white rounded-xl border border-light-gray/20 hover:border-slate-red/50 transition-colors"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

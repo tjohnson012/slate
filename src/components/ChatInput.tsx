@@ -35,18 +35,18 @@ export function ChatInput({ onSubmit, disabled, placeholder }: ChatInputProps) {
           disabled={disabled}
           placeholder={placeholder || "Plan my evening..."}
           rows={3}
-          className="w-full px-4 py-3 pr-14 bg-zinc-900 border border-zinc-800 rounded-xl
-                     text-white placeholder-zinc-500 resize-none
-                     focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500
+          className="w-full px-4 py-3 pr-14 bg-charcoal border border-light-gray/20 rounded-xl
+                     text-slate-white placeholder-warm-gray resize-none
+                     focus:outline-none focus:ring-2 focus:ring-slate-red/50 focus:border-slate-red
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-all duration-200"
         />
         <button
           type="submit"
           disabled={disabled || !value.trim()}
-          className="absolute right-3 bottom-3 p-2 bg-amber-500 rounded-lg
-                     text-zinc-900 font-medium
-                     hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed
+          className="absolute right-3 bottom-3 p-2 bg-slate-red rounded-lg
+                     text-white font-medium
+                     hover:bg-slate-red/90 disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors duration-200"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,7 +54,7 @@ export function ChatInput({ onSubmit, disabled, placeholder }: ChatInputProps) {
           </svg>
         </button>
       </div>
-      <p className="mt-2 text-xs text-zinc-500">
+      <p className="mt-2 text-xs text-warm-gray">
         Try: &quot;Sushi for 2 in the East Village around 7pm, then drinks&quot;
       </p>
     </form>

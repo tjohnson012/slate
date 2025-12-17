@@ -4,7 +4,7 @@ import {
   Navigation,
   HeroSection,
   HowItWorksSection,
-  TestimonialSection,
+  FeaturesSection,
   Footer,
 } from '@/components/landing';
 
@@ -15,7 +15,7 @@ export default function Home() {
       <main id="main-content" className="scroll-smooth">
         <HeroSection />
         <HowItWorksSection />
-        <TestimonialSection />
+        <FeaturesSection />
       </main>
       <Footer />
     </>

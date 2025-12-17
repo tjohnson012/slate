@@ -11,18 +11,18 @@ interface Props {
 
 const eventConfig: Record<PlanningEventType, { icon: string; color: string }> = {
   intent_parsed: { icon: '🧠', color: 'text-purple-400' },
-  searching_restaurants: { icon: '🔍', color: 'text-zinc-300' },
-  restaurants_found: { icon: '📍', color: 'text-amber-400' },
+  searching_restaurants: { icon: '🔍', color: 'text-slate-white' },
+  restaurants_found: { icon: '📍', color: 'text-slate-red' },
   matrix_update: { icon: '📊', color: 'text-blue-400' },
-  cell_status_change: { icon: '⬜', color: 'text-zinc-400' },
-  booking_attempt: { icon: '📞', color: 'text-amber-400' },
-  booking_success: { icon: '✓', color: 'text-emerald-400' },
+  cell_status_change: { icon: '⬜', color: 'text-warm-gray' },
+  booking_attempt: { icon: '📞', color: 'text-slate-red' },
+  booking_success: { icon: '✓', color: 'text-success' },
   booking_failed: { icon: '✗', color: 'text-red-400' },
-  recovery_start: { icon: '↻', color: 'text-amber-400' },
+  recovery_start: { icon: '↻', color: 'text-warning' },
   vibe_match_calculated: { icon: '✨', color: 'text-purple-400' },
-  drinks_search: { icon: '🍸', color: 'text-zinc-300' },
+  drinks_search: { icon: '🍸', color: 'text-slate-white' },
   walking_route_calculated: { icon: '🚶', color: 'text-blue-400' },
-  plan_complete: { icon: '★', color: 'text-emerald-400' },
+  plan_complete: { icon: '★', color: 'text-success' },
   error: { icon: '!', color: 'text-red-400' },
 };
 
@@ -36,7 +36,7 @@ export function ThinkingStream({ events, isPlanning }: Props) {
   if (events.length === 0 && !isPlanning) return null;
 
   return (
-    <div className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 max-h-72 overflow-y-auto">
+    <div className="w-full bg-charcoal/50 border border-light-gray/10 rounded-xl p-4 max-h-72 overflow-y-auto">
       <AnimatePresence mode="popLayout">
         {events.map((event, i) => {
           const config = eventConfig[event.type] || eventConfig.error;
@@ -69,13 +69,13 @@ export function ThinkingStream({ events, isPlanning }: Props) {
             {[0, 1, 2].map((i) => (
               <motion.span
                 key={i}
-                className="w-1 h-1 bg-amber-500 rounded-full"
+                className="w-1 h-1 bg-slate-red rounded-full"
                 animate={{ y: [0, -4, 0] }}
                 transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
               />
             ))}
           </span>
-          <span className="text-sm text-zinc-500">Working...</span>
+          <span className="text-sm text-warm-gray">Working...</span>
         </motion.div>
       )}
       <div ref={bottomRef} />

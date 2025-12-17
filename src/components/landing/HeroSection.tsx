@@ -36,7 +36,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Plan your perfect evening
+              Your evening, handled
               <span className="text-slate-red">.</span>
             </motion.h1>
 
@@ -46,8 +46,8 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Just text what you&apos;re in the mood for. We&apos;ll find the spots,
-              check availability, and book everything—dinner to drinks.
+              Text what you&apos;re in the mood for. Slate finds the spots,
+              checks availability, and books everything—dinner, drinks, dessert.
             </motion.p>
 
             <motion.div
@@ -66,26 +66,6 @@ export function HeroSection() {
                   See How It Works
                 </Button>
               </Link>
-            </motion.div>
-
-            {/* Social proof */}
-            <motion.div
-              className="mt-12 flex items-center gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="w-8 h-8 rounded-full bg-charcoal border-2 border-slate-black"
-                  />
-                ))}
-              </div>
-              <p className="text-sm text-warm-gray">
-                <span className="text-slate-white font-medium">2,400+</span> evenings planned this month
-              </p>
             </motion.div>
           </motion.div>
 
